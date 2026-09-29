@@ -1,9 +1,9 @@
 import { Request, Response } from "express"
-import { createUser, getUser } from "../services/auth.service"
+import { createUserService, getUserService, refreshTokenService } from "../services/auth.service"
 
-export const signup = async (req :Request, res :Response) => {
+export const signupController = async (req :Request, res :Response) => {
     try{
-        const body = await createUser(req.body)
+        const body = await createUserService(req.body)
         return res.status(201).json({
             success : true,
             message : "user account created successfully",
@@ -29,9 +29,9 @@ export const signup = async (req :Request, res :Response) => {
     }
 }
 
-export const signin = async (req :Request, res: Response) => {
+export const signinController = async (req :Request, res: Response) => {
     try{
-        const body = await getUser(req.body)
+        const body = await getUserService(req.body)
         return res.status(200).json({
             success: true,
             message: "user signin successfully",
@@ -52,4 +52,25 @@ export const signin = async (req :Request, res: Response) => {
             })
         }
     }
+}
+
+export const refreshTokenController = (req: Request, res: Response) => {
+    const payload = (req as any).user
+
+    try{
+        const data = refreshTokenService(payload.userId)
+        return res.status(200).json({
+            success : true,
+            message : "token refreshed successfully",
+            data : data
+        })
+    }catch(error){
+        return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : "server failed to refresh token"
+        })
+    }
+
+
 }

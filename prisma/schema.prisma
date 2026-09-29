@@ -30,3 +30,11 @@ enum AuthProvider{
   google
   solo
 }
+
+model refresh_token {
+  id String @unique @id @default(uuid()) @db.Uuid
+  userId String
+  token String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

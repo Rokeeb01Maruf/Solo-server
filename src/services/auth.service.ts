@@ -3,7 +3,7 @@ import { recordUser, retrieveUser } from "../repositories/auth.repo"
 import { hashPassword, verifyPassword } from "../../utils/argon"
 import { generateToken } from "../../lib/jwt"
 
-export const createUser = async (data : signup) => {
+export const createUserService = async (data : signup) => {
     const hash = await hashPassword(data.password)
     data.password = hash
     const user = await recordUser(data)
@@ -18,7 +18,7 @@ export const createUser = async (data : signup) => {
     }
 }
 
-export const getUser = async (data :signin) => {
+export const getUserService = async (data :signin) => {
     const user = await retrieveUser(data.email)
     if(user.error){
         throw new Error(user.error)
@@ -33,5 +33,13 @@ export const getUser = async (data :signin) => {
         }else{
             throw new Error("password mismatch")
         }
+    }
+}
+
+export const refreshTokenService = (id :string) => {
+    const tokens = generateToken(id)
+    return {
+        id : id,
+        tokens
     }
 }

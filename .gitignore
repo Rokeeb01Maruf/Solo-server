@@ -25,4 +25,5 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
+# Prisma generated folder
 /generated/prisma
