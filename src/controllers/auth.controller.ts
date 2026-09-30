@@ -56,15 +56,24 @@ export const signinController = async (req :Request, res: Response) => {
 
 export const refreshTokenController = (req: Request, res: Response) => {
     const payload = (req as any).user
+    const body = req.body
+    const refresh = body.refresh
 
     try{
-        const data = refreshTokenService(payload.userId)
+        const data = refreshTokenService(payload.userId, refresh)
         return res.status(200).json({
             success : true,
             message : "token refreshed successfully",
             data : data
         })
-    }catch(error){
+    }catch(error :any){
+        if(error.message === "invalid or expired token"){
+            return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : error.message
+            })
+        }
         return res.status(500).json({
             success : false,
             message : "internal server error",
