@@ -54,13 +54,13 @@ export const signinController = async (req :Request, res: Response) => {
     }
 }
 
-export const refreshTokenController = (req: Request, res: Response) => {
+export const refreshTokenController = async(req: Request, res: Response) => {
     const payload = (req as any).user
     const body = req.body
     const refresh = body.refresh
 
     try{
-        const data = refreshTokenService(payload.userId, refresh)
+        const data = await refreshTokenService(payload.userId, refresh)
         return res.status(200).json({
             success : true,
             message : "token refreshed successfully",
