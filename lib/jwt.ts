@@ -15,7 +15,7 @@ export const generateToken = (id :string) => {
     )
 
     return {
-        token : {
+        tokens : {
             access : accessToken,
             refresh : refreshToken
         }

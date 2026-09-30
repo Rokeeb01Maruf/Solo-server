@@ -9,7 +9,7 @@ export const signupController = async (req :Request, res :Response) => {
             message : "user account created successfully",
             data : {
                 id : body?.id,
-                tokens : body?.tokens.token
+                tokens : body?.tokens
             }
         })
     }catch(error :any){

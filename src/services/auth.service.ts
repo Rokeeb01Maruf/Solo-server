@@ -10,7 +10,7 @@ export const createUserService = async (data : signup) => {
     if (user.error){
         throw new Error(user.error)
     }else if(user.userId){
-        const tokens = generateToken(user.userId)
+        const { tokens } = generateToken(user.userId)
         return {
             id : user.userId,
             tokens
@@ -25,7 +25,7 @@ export const getUserService = async (data :signin) => {
     }else if(user.user){
         const isValid = await verifyPassword(data.password, user.user.password)
         if(isValid){
-            const tokens = generateToken(user.user.id)
+            const { tokens } = generateToken(user.user.id)
             return {
                 id : user.user.id,
                 tokens
@@ -37,7 +37,7 @@ export const getUserService = async (data :signin) => {
 }
 
 export const refreshTokenService = (id :string) => {
-    const tokens = generateToken(id)
+    const  { tokens } = generateToken(id)
     return {
         id : id,
         tokens

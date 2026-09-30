@@ -24,6 +24,8 @@ model users {
   location String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  refreshToken refresh_token?
 }
 
 enum AuthProvider{
@@ -32,9 +34,10 @@ enum AuthProvider{
 }
 
 model refresh_token {
-  id String @unique @id @default(uuid()) @db.Uuid
-  userId String
+  id String @id @default(uuid()) @db.Uuid
+  userId String @unique @db.Uuid
   token String
-  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  user users @relation(fields: [userId], references: [id])
 }
