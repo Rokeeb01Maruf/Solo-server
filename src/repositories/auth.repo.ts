@@ -1,6 +1,7 @@
 import { prisma } from "../../lib/prisma"
 import { signup } from "../../utils/types"
 import { Prisma } from "../../generated/prisma/client"
+import { codec } from "zod";
 
 export const retrieveUser = async (email: string) => {
     const user = await prisma.users.findUnique({
@@ -16,10 +17,24 @@ export const retrieveUser = async (email: string) => {
     }
 }
 
-export const recordUser = async (data: signup) => {
+export const recordUser = async (data: signup, code :string) => {
     try{
         const storeUser = await prisma.users.create({
-            data: data
+            data: {
+                email: data.email,
+                password: data.password,
+                username: data.username,
+                profileUrl: data.profileUrl,
+                location: data.location,
+                lastDevice: data.lastDevice,
+                otp : {
+                    create : {
+                        code : code,
+                        expiresAt : new Date(Date.now() + 60 * 1000),
+                        passwordType : "email"
+                    }
+                }
+            }
         })
         return {userId : storeUser.id}
     }catch(error){
@@ -91,4 +106,60 @@ export const createRefreshToken = async(userId: string, refresh: string) => {
         }
     })
     return token.token
+}
+
+export const storeOtp = async(id :string, otp :string) => {
+    const result = await prisma.otp.create({
+        data : {
+            userId : id,
+            code : otp,
+            passwordType : "email",
+            expiresAt : new Date(Date.now() + 60 * 1000)
+        }
+    })
+    return result.code
+}
+
+
+export const getOtp = async (userId :string, type :string) => {
+    if(type === "email"){
+        const code = await prisma.otp.findFirst({
+            where : {
+                userId : userId,
+                passwordType : type,
+                isUsed : false
+            },
+
+            select : {
+                id : true,
+                userId : true,
+                code : true,
+                expiresAt : true,
+                isUsed : true
+            }
+        })
+        return code
+    }
+}
+
+export const validateEmail = async (userId :string, id :string) => {
+    const user = await prisma.$transaction([
+        prisma.users.update({
+            where : {
+                id : userId
+            },
+            data : {
+                emailVerified : true
+            } 
+        }),
+        prisma.otp.update({
+            where : {
+                id : id
+            },
+            data : {
+                isUsed : true
+            }
+        })
+    ])
+    return user
 }
