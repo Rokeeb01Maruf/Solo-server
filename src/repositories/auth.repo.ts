@@ -1,7 +1,6 @@
 import { prisma } from "../../lib/prisma"
 import { signup } from "../../utils/types"
 import { Prisma } from "../../generated/prisma/client"
-import { codec } from "zod";
 
 export const retrieveUser = async (email: string) => {
     const user = await prisma.users.findUnique({
@@ -30,7 +29,7 @@ export const recordUser = async (data: signup, code :string) => {
                 otp : {
                     create : {
                         code : code,
-                        expiresAt : new Date(Date.now() + 60 * 1000),
+                        expiresAt : new Date(Date.now() + 5 * 60 * 1000),
                         passwordType : "email"
                     }
                 }
@@ -114,7 +113,7 @@ export const storeOtp = async(id :string, otp :string) => {
             userId : id,
             code : otp,
             passwordType : "email",
-            expiresAt : new Date(Date.now() + 60 * 1000)
+            expiresAt : new Date(Date.now() + 5 * 60 * 1000)
         }
     })
     return result.code
@@ -162,4 +161,33 @@ export const validateEmail = async (userId :string, id :string) => {
         })
     ])
     return user
+}
+
+export const changeOtpRepo = async(userId :string, type :string, code :string) => {
+    if (type === "email"){
+        const expiresAt = new Date(Date.now() + 2 * 60 * 1000)
+        const otp = await prisma.otp.update({
+            where : {
+                userId : userId,
+                passwordType : "email",
+                isUsed : false
+            },
+
+            data : {
+                code : code,
+                isUsed : false,
+                expiresAt : expiresAt
+            },
+
+            include : {
+                user : {
+                    select : {
+                        email : true
+                    }
+                }
+            }
+        })
+
+        return otp
+    }
 }

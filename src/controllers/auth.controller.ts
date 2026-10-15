@@ -1,7 +1,12 @@
 import { Request, Response } from "express"
-import { createUserService, getUserService, refreshTokenService, validateOtp } from "../services/auth.service"
+import { createUserService, 
+    getUserService, 
+    refreshTokenService, 
+    validateOtp,
+    resendOtpService
+ } from "../services/auth.service"
 import { sendRegistrationEmail } from "../../utils/email"
-import { success } from "zod";
+import { Prisma } from "../../generated/prisma/client";
 
 export const signupController = async (req :Request, res :Response) => {
     try{
@@ -86,11 +91,10 @@ export const refreshTokenController = async(req: Request, res: Response) => {
 }
 
 export const verifyEmail = async(req :Request, res :Response) => {
-    const userId = (req as any).user.userId
-    const otp = req.body.otp
+    const { id, otp } = req.body
     const code = String(otp)
     try{
-        const validate = await validateOtp(code, userId, "email")
+        const validate = await validateOtp(code, id, "email")
         if(validate[0].emailVerified){
             return res.status(200).json({
                 success : true,
@@ -107,12 +111,45 @@ export const verifyEmail = async(req :Request, res :Response) => {
                 error : "invalid or expired token"
             })
         }else{
-            console.log(err.message)
             return res.status(500).json({
                 success : false,
                 message : "internal server error",
                 error : "server failed to validate email"
             })
         }
+    }
+}
+
+export const resendOtpController = async (req :Request, res :Response) => {
+    const { id } = req.body
+    try{
+        const resendOtp = await resendOtpService(id, "email")
+        if(resendOtp && resendOtp.otp){
+            await sendRegistrationEmail(resendOtp.otp.user.email, resendOtp.code)
+            return res.status(200).json({
+                success : true,
+                message : "otp resent successfully",
+                data : {}
+            })
+        }else{
+            return res.status(500).json({
+                success : false,
+                message : "internal server error",
+                error : "server failed to resend otp"
+            })
+        }
+    }catch(error :any){
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025"){
+            return res.send(400).json({
+                success : false,
+                message : "bad request",
+                error : "this user cannot request otp resend"
+            })
+        }
+        return res.status(500).json({
+                success : false,
+                message : "internal server error",
+                error : error.message
+            })
     }
 }

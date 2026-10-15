@@ -1,6 +1,5 @@
 import { Request, Response} from "express"
 import { getUserService } from "../services/users.service"
-import { success } from "zod";
 
 export const getMeController = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId

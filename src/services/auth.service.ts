@@ -6,7 +6,8 @@ import {
     storeRefreshToken,
     createRefreshToken,
     getOtp,
-    validateEmail
+    validateEmail,
+    changeOtpRepo
 } from "../repositories/auth.repo"
 import { hashPassword, verifyPassword } from "../../utils/argon"
 import { generateToken } from "../../lib/jwt"
@@ -71,7 +72,7 @@ export const validateOtp = async(otp :string, userId :string, type :string) => {
     const now = new Date()
     if(code){
         if (code.isUsed) throw new Error("used token")
-        if (now < code.expiresAt) throw new Error("expired token")
+        if (now > code.expiresAt) throw new Error("expired token")
         const validatedOtp = await verifyPassword(otp, code.code)
         if(!validatedOtp) throw new Error("invalid token")
         const email = validateEmail(code.userId, code.id)
@@ -80,4 +81,11 @@ export const validateOtp = async(otp :string, userId :string, type :string) => {
     }else{
         throw new Error("invalid or expired otp")
     }
+}
+
+export const resendOtpService = async(userId :string, type :string) => {
+    const code = crypto.randomInt(100000, 1000000).toString()
+    const hashedOtp = await hashPassword(code)
+    const otp = await changeOtpRepo(userId, "email", hashedOtp)
+    return {otp : otp, code : code}
 }
