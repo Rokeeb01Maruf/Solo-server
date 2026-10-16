@@ -166,11 +166,18 @@ export const validateEmail = async (userId :string, id :string) => {
 export const changeOtpRepo = async(userId :string, type :string, code :string) => {
     if (type === "email"){
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000)
-        const otp = await prisma.otp.update({
+        const findOtp = await prisma.otp.findFirst({
             where : {
                 userId : userId,
                 passwordType : "email",
                 isUsed : false
+            }
+        })
+
+        if (!findOtp || !findOtp.id) throw new Error("user cannot generate email otp")
+        const otp = await prisma.otp.update({
+            where : {
+                id : findOtp.id
             },
 
             data : {
@@ -190,4 +197,104 @@ export const changeOtpRepo = async(userId :string, type :string, code :string) =
 
         return otp
     }
+}
+
+export const getUser = async (email :string) => {
+    const user = await prisma.users.findFirst({
+        where : {
+            email : email
+        }
+    })
+    return user
+}
+
+export const upsertPasswordOtp = async(otp :string, userId :string) => {
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
+    const upsert = await prisma.otp.upsert({
+        where : {
+            userId_passwordType : {
+                userId : userId,
+                passwordType : "password"
+            }
+        },
+
+        update : {
+            code : otp,
+            isUsed : false,
+            expiresAt : expiresAt
+        },
+
+        create : {
+            userId : userId,
+            code : otp,
+            passwordType : "password",
+            expiresAt : expiresAt
+        },
+
+        include : {
+            user : {
+                select : {
+                    email : true
+                }
+            }
+        }
+    })
+    return upsert
+}
+
+export const storePasswordResetToken = async (userId :string, token :string) => {
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
+    const code = await prisma.token.upsert({
+        where : {
+            userId : userId
+        },
+
+        update : {
+            token : token,
+            expiresAt : expiresAt,
+            isUsed : false
+        },
+
+        create : {
+            userId : userId,
+            token : token,
+            expiresAt : expiresAt
+        }
+    })
+    return code
+}
+
+export const getPasswordOtp = async (userId :string) => {
+    const otp = await prisma.otp.findFirst({
+        where : {
+            userId : userId,
+            passwordType : "password",
+        }
+    })
+
+    if (!otp) throw new Error("token cannot be found")
+    
+    return otp
+}
+
+export const getPasswordResetToken = async(userId :string) => {
+    const storedToken = await prisma.token.findFirst({
+        where : {
+            userId : userId
+        }
+    })
+
+    return storedToken
+}
+
+export const resetUserPassword = async(userId :string, password :string) => {
+    return await prisma.users.update({
+        where : {
+            id : userId
+        },
+
+        data : {
+            password : password
+        }
+    })
 }

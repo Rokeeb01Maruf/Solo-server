@@ -13,3 +13,8 @@ export const signinSchema = z.object({
     email: z.email(),
     password: z.string().min(8)
 })
+
+export const passwordResetSchema = z.object({
+    token : z.string().nonempty(),
+    password : z.string().min(8)
+})

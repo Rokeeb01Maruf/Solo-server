@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { signupSchema, signinSchema } from "../../utils/zod"
+import { signupSchema, signinSchema, passwordResetSchema } from "../../utils/zod"
 import { verifyAccessToken, verifyRefreshToken } from "../../lib/jwt"
 
 
@@ -79,4 +79,15 @@ export const validateRefreshToken = (req: Request, res: Response, next: NextFunc
             error : "invalid or expired token"
         })
     }
+}
+
+export const validatePasswordResetToken = async (req :Request, res :Response, next :NextFunction) => {
+    const result = passwordResetSchema.safeParse(req.body)
+    if (result.error) return res.status(400).json({
+        success : false,
+        message : "bad request",
+        error : result.error.issues
+    })
+
+    next()
 }

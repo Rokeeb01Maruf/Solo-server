@@ -1,12 +1,18 @@
 import { Request, Response } from "express"
+import crypto from "crypto"
 import { createUserService, 
     getUserService, 
     refreshTokenService, 
     validateOtp,
-    resendOtpService
+    resendOtpService,
+    sendPasswordOtp,
+    getOtpService,
+    storeTokenService,
+    passwordResetService
  } from "../services/auth.service"
-import { sendRegistrationEmail } from "../../utils/email"
-import { Prisma } from "../../generated/prisma/client";
+import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email"
+import { verifyPassword } from "../../utils/argon";
+import { resetUserPassword } from "../repositories/auth.repo";
 
 export const signupController = async (req :Request, res :Response) => {
     try{
@@ -139,7 +145,7 @@ export const resendOtpController = async (req :Request, res :Response) => {
             })
         }
     }catch(error :any){
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025"){
+        if (error.message === "user cannot generate email otp"){
             return res.send(400).json({
                 success : false,
                 message : "bad request",
@@ -151,5 +157,91 @@ export const resendOtpController = async (req :Request, res :Response) => {
                 message : "internal server error",
                 error : error.message
             })
+    }
+}
+
+export const passwordResetOtp = async (req :Request, res :Response) => {
+    const { email } = req.body
+    try{
+        const { otp, userId } = await sendPasswordOtp(email)
+        sendPasswordResetEmail(email, otp)
+        return res.status(200).json({
+            success : true,
+            message : "password reset email has been sent if user with this email exist",
+            data : {
+                id : userId
+            }
+        })
+    }catch(error :any){
+        const errors = ["failed to generate otp", "user not found"]
+        if (errors.includes(error.message)){
+            return res.status(200).json({
+                success : true,
+                message : "password reset email has been sent if user with this email exist",
+                data : {}
+            })
+        }
+        return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : error.message
+        })
+    }
+
+}
+
+export const validatePasswordOtp = async (req :Request, res :Response) => {
+    const { id, otp } = req.body
+    try{
+        const hashedOtp = await getOtpService(id)
+        const isValid = await verifyPassword(otp, hashedOtp)
+        if (!isValid) throw new Error("invalid otp")
+        const token = crypto.randomBytes(32).toString("base64url")
+        const storeToken = await storeTokenService(token, id)
+        return res.status(200).json({
+            success : true,
+            message : "user successfully verified",
+            data : {
+                id : id,
+                token : token
+            }
+        })
+    }catch(error :any){
+        if (error.message === "invalid otp" || error.message === "expired otp") return res.status(400).json({
+            success : false,
+            message : "bad request",
+            error : "invalid or expired otp"
+        })
+        return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : error.message
+        })
+    }
+}
+
+export const passwordResetController = async (req :Request, res :Response) => {
+    const { id, token, password } = req.body
+    try{
+        await passwordResetService(id, token, password)
+        return res.status(200).json({
+            success : true,
+            message : "password reset successfully",
+            data : {}
+        })
+    }catch(error :any){
+        if(error.message === "invalid token" || error.message === "expired token"){
+            return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : "invalid or expired token"
+            })
+        }else{
+            return res.status(500).json({
+                success : false,
+                message : "internal server error",
+                error : "server failed to change users password"
+            })
+        }
     }
 }

@@ -7,7 +7,13 @@ import {
     createRefreshToken,
     getOtp,
     validateEmail,
-    changeOtpRepo
+    changeOtpRepo,
+    getUser,
+    upsertPasswordOtp,
+    getPasswordOtp,
+    storePasswordResetToken,
+    getPasswordResetToken,
+    resetUserPassword
 } from "../repositories/auth.repo"
 import { hashPassword, verifyPassword } from "../../utils/argon"
 import { generateToken } from "../../lib/jwt"
@@ -86,6 +92,37 @@ export const validateOtp = async(otp :string, userId :string, type :string) => {
 export const resendOtpService = async(userId :string, type :string) => {
     const code = crypto.randomInt(100000, 1000000).toString()
     const hashedOtp = await hashPassword(code)
-    const otp = await changeOtpRepo(userId, "email", hashedOtp)
+    const otp = await changeOtpRepo(userId, type, hashedOtp)
     return {otp : otp, code : code}
+}
+
+export const sendPasswordOtp = async(email :string) => {
+    const user = await getUser(email)
+    if(!user) throw new Error("user not found")
+    const code = crypto.randomInt(100000, 1000000).toString()
+    const hashedOtp = await hashPassword(code)
+    const otp = await upsertPasswordOtp(hashedOtp, user.id)
+
+    if (!otp) throw new Error("failed to generate otp")
+    return {otp : code, userId : user.id}
+}
+
+export const getOtpService = async(userId :string) => {
+    const otp = await getPasswordOtp(userId)
+    if ( new Date() > otp.expiresAt ) throw new Error("expired otp")
+    if (otp.isUsed) throw new Error("invalid otp")
+    return otp.code
+}
+
+export const storeTokenService = async(code :string, userId :string) => {
+    return await storePasswordResetToken(userId, code)
+}
+
+export const passwordResetService = async(userId :string, token :string, password :string) => {
+    const storedToken = await getPasswordResetToken(userId)
+    if(!storedToken) throw new Error("internal server error")
+    if (storedToken.token != token) throw new Error("invalid token")
+    if (new Date() > storedToken.expiresAt) throw new Error("expired token")
+    
+    return await resetUserPassword(userId, await hashPassword(password))
 }

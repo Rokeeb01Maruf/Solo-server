@@ -8,7 +8,10 @@ import { signupController,
     signinController, 
     refreshTokenController,
     verifyEmail,
-    resendOtpController
+    resendOtpController,
+    passwordResetOtp,
+    validatePasswordOtp,
+    passwordResetController
  } from "../controllers/auth.controller"
 const router = Router()
 
@@ -17,5 +20,8 @@ router.post("/signin", ValidateSignin, signinController)
 router.post("/refresh", validateRefreshToken, refreshTokenController)
 router.patch("/email", verifyEmail)
 router.patch("/otp", resendOtpController)
+router.post("/password/request", passwordResetOtp)
+router.post("/password/reset", passwordResetController)
+router.post("/otp", validatePasswordOtp)
 
 export default router
