@@ -290,11 +290,20 @@ export const getPasswordResetToken = async(userId :string) => {
 export const resetUserPassword = async(userId :string, password :string) => {
     return await prisma.users.update({
         where : {
-            id : userId
+            id : userId,
+            emailVerified : true
         },
 
         data : {
             password : password
+        }
+    })
+}
+
+export const retrieveUserbyId = async(id :string) => {
+    return await prisma.users.findFirst({
+        where : {
+            id : id
         }
     })
 }

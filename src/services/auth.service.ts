@@ -13,7 +13,8 @@ import {
     getPasswordOtp,
     storePasswordResetToken,
     getPasswordResetToken,
-    resetUserPassword
+    resetUserPassword,
+    retrieveUserbyId
 } from "../repositories/auth.repo"
 import { hashPassword, verifyPassword } from "../../utils/argon"
 import { generateToken } from "../../lib/jwt"
@@ -125,4 +126,12 @@ export const passwordResetService = async(userId :string, token :string, passwor
     if (new Date() > storedToken.expiresAt) throw new Error("expired token")
     
     return await resetUserPassword(userId, await hashPassword(password))
+}
+
+export const changePasswordservice = async (userId :string, password :string) => {
+    return await resetUserPassword(userId, await hashPassword(password))
+}
+
+export const retrieveUserService = async(id :string) => {
+    return await retrieveUserbyId(id)
 }

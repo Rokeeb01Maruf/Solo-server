@@ -2,7 +2,8 @@ import Router from "express"
 import { ValidateSignup, 
     ValidateSignin, 
     validateRefreshToken,
-    validateUser
+    validateUser,
+    validateChangePassword
  } from "../middlewares/auth.middleware"
 import { signupController, 
     signinController, 
@@ -11,7 +12,8 @@ import { signupController,
     resendOtpController,
     passwordResetOtp,
     validatePasswordOtp,
-    passwordResetController
+    passwordResetController,
+    changePasswordController
  } from "../controllers/auth.controller"
 const router = Router()
 
@@ -22,6 +24,7 @@ router.patch("/email", verifyEmail)
 router.patch("/otp", resendOtpController)
 router.post("/password/request", passwordResetOtp)
 router.post("/password/reset", passwordResetController)
+router.post("/password/change", validateUser, validateChangePassword, changePasswordController)
 router.post("/otp", validatePasswordOtp)
 
 export default router

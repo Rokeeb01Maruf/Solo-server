@@ -8,11 +8,13 @@ import { createUserService,
     sendPasswordOtp,
     getOtpService,
     storeTokenService,
-    passwordResetService
+    passwordResetService,
+    retrieveUserService,
+    changePasswordservice
  } from "../services/auth.service"
 import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email"
 import { verifyPassword } from "../../utils/argon";
-import { resetUserPassword } from "../repositories/auth.repo";
+import id from "zod/v4/locales/id.cjs";
 
 export const signupController = async (req :Request, res :Response) => {
     try{
@@ -243,5 +245,38 @@ export const passwordResetController = async (req :Request, res :Response) => {
                 error : "server failed to change users password"
             })
         }
+    }
+}
+
+export const changePasswordController = async (req :Request, res :Response) => {
+    const { password, newPassword } = req.body
+    const { userId } = (req as any).user
+    const user = await retrieveUserService(userId)
+
+    if(!user) return res.status(401).json({
+        success : false,
+        message : "unauthorized",
+        error : "user is unauthorized to perform this action"
+    })
+
+    if(!(await verifyPassword(password, user.password))) return res.status(400).json({
+        success : false,
+        message : "invalid credentials",
+        error : "password is incorrect"
+    })
+
+    try{
+        await changePasswordservice(userId, newPassword)
+        return res.status(200).json({
+            success : true,
+            message : "password changed successfully",
+            data : {}
+        })
+    }catch(error){
+        if (error) return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : "server failed to change password"
+        })
     }
 }
