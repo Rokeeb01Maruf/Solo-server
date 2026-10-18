@@ -2,8 +2,16 @@ import express from "express"
 import type { Request, Response, NextFunction } from "express"
 import auth from "./routes/auth.routes"
 import users from "./routes/users.routes"
+import pinoHttp from "pino-http"
+import logger from "../utils/logger"
 
 const app = express()
+
+app.use(
+    pinoHttp({
+        logger
+    })
+)
 
 app.use(express.json())
 

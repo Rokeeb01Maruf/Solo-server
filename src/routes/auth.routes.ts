@@ -13,7 +13,7 @@ import { signupController,
     passwordResetOtp,
     validatePasswordOtp,
     passwordResetController,
-    changePasswordController
+    changePasswordController,
  } from "../controllers/auth.controller"
 const router = Router()
 
@@ -26,5 +26,4 @@ router.post("/password/request", passwordResetOtp)
 router.post("/password/reset", passwordResetController)
 router.post("/password/change", validateUser, validateChangePassword, changePasswordController)
 router.post("/otp", validatePasswordOtp)
-
 export default router

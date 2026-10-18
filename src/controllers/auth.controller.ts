@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import crypto from "crypto"
+import logger from "../../utils/logger"
 import { createUserService, 
     getUserService, 
     refreshTokenService, 
@@ -14,12 +15,12 @@ import { createUserService,
  } from "../services/auth.service"
 import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email"
 import { verifyPassword } from "../../utils/argon";
-import id from "zod/v4/locales/id.cjs";
 
 export const signupController = async (req :Request, res :Response) => {
     try{
         const body = await createUserService(req.body)
         if(body) await sendRegistrationEmail(req.body.email, body.otp)
+        logger.info({userId : body?.id}, "account created successfully")
         return res.status(201).json({
             success : true,
             message : "user account created successfully, check your email for email verification otp",
@@ -30,12 +31,14 @@ export const signupController = async (req :Request, res :Response) => {
         })
     }catch(error :any){
         if(error.message == "user already exists"){
+            logger.warn("Signup rejected: user already exists")
             return res.status(400).json({
                 success : false,
                 message : "bad request",
                 error : error.message
             })
         }else{
+            logger.error({err : error}, "Signup failed")
             return res.status(500).json({
                 success : false,
                 message : "server failed to register user",
@@ -48,6 +51,10 @@ export const signupController = async (req :Request, res :Response) => {
 export const signinController = async (req :Request, res: Response) => {
     try{
         const body = await getUserService(req.body)
+        logger.info(
+            {userId : body?.id},
+            "user sgnin successfully"
+        )
         return res.status(200).json({
             success: true,
             message: "user signin successfully",
@@ -55,12 +62,14 @@ export const signinController = async (req :Request, res: Response) => {
         })
     }catch(error :any){
         if(error.message === "user not found" || error.message === "password mismatch"){
+            logger.warn({err : error}, error.message)
             return res.status(400).json({
                 success : false,
                 message : "bad request",
                 error : "invalid email or password"
             })
         }else{
+            logger.error({err : error}, "Signin failed")
             return res.status(500).json({
                 success : false,
                 message : "internal server error",
@@ -77,6 +86,7 @@ export const refreshTokenController = async(req: Request, res: Response) => {
 
     try{
         const data = await refreshTokenService(payload.userId, refresh)
+        logger.info("token refreshed successfully")
         return res.status(200).json({
             success : true,
             message : "token refreshed successfully",
@@ -84,12 +94,14 @@ export const refreshTokenController = async(req: Request, res: Response) => {
         })
     }catch(error :any){
         if(error.message === "invalid or expired token"){
+            logger.warn({err : error}, `token refresh aborted: ${error.message}`)
             return res.status(400).json({
                 success : false,
                 message : "bad request",
                 error : error.message
             })
         }
+        logger.error({err : error}, error.message)
         return res.status(500).json({
             success : false,
             message : "internal server error",
@@ -104,6 +116,7 @@ export const verifyEmail = async(req :Request, res :Response) => {
     try{
         const validate = await validateOtp(code, id, "email")
         if(validate[0].emailVerified){
+            logger.info({userId : id}, "user email verified")
             return res.status(200).json({
                 success : true,
                 message : "email verified successfully",
@@ -113,12 +126,14 @@ export const verifyEmail = async(req :Request, res :Response) => {
     }catch(err :any){
         const errors = ["expired token", "used token", "invalid token"]
         if (errors.includes(err.message)){
+            logger.warn({err : err}, `email verification aborted : ${err.message}`)
             return res.status(400).json({
                 success : false,
                 message : "bad request",
                 error : "invalid or expired token"
             })
         }else{
+            logger.error({err : err}, err.message)
             return res.status(500).json({
                 success : false,
                 message : "internal server error",
@@ -134,12 +149,14 @@ export const resendOtpController = async (req :Request, res :Response) => {
         const resendOtp = await resendOtpService(id, "email")
         if(resendOtp && resendOtp.otp){
             await sendRegistrationEmail(resendOtp.otp.user.email, resendOtp.code)
+            logger.info({userId : id}, "otp resent successfully")
             return res.status(200).json({
                 success : true,
                 message : "otp resent successfully",
                 data : {}
             })
         }else{
+            logger.error({userId : id}, "failed to resend otp")
             return res.status(500).json({
                 success : false,
                 message : "internal server error",
@@ -147,6 +164,7 @@ export const resendOtpController = async (req :Request, res :Response) => {
             })
         }
     }catch(error :any){
+        logger.warn({userId : id}, "user cannot request otp resend")
         if (error.message === "user cannot generate email otp"){
             return res.send(400).json({
                 success : false,
@@ -154,6 +172,7 @@ export const resendOtpController = async (req :Request, res :Response) => {
                 error : "this user cannot request otp resend"
             })
         }
+        logger.error({err : error}, error.message)
         return res.status(500).json({
                 success : false,
                 message : "internal server error",
@@ -167,6 +186,7 @@ export const passwordResetOtp = async (req :Request, res :Response) => {
     try{
         const { otp, userId } = await sendPasswordOtp(email)
         sendPasswordResetEmail(email, otp)
+        logger.info({userId : userId}, "password reset otp has been sent to email")
         return res.status(200).json({
             success : true,
             message : "password reset email has been sent if user with this email exist",
@@ -177,12 +197,14 @@ export const passwordResetOtp = async (req :Request, res :Response) => {
     }catch(error :any){
         const errors = ["failed to generate otp", "user not found"]
         if (errors.includes(error.message)){
+            logger.warn({err : error}, error.message)
             return res.status(200).json({
                 success : true,
                 message : "password reset email has been sent if user with this email exist",
                 data : {}
             })
         }
+        logger.error({err : error}, error.message)
         return res.status(500).json({
             success : false,
             message : "internal server error",
@@ -200,6 +222,7 @@ export const validatePasswordOtp = async (req :Request, res :Response) => {
         if (!isValid) throw new Error("invalid otp")
         const token = crypto.randomBytes(32).toString("base64url")
         const storeToken = await storeTokenService(token, id)
+        logger.info({userId : id}, "user verified successfully")
         return res.status(200).json({
             success : true,
             message : "user successfully verified",
@@ -209,11 +232,13 @@ export const validatePasswordOtp = async (req :Request, res :Response) => {
             }
         })
     }catch(error :any){
+        logger.warn({err : error}, error.message)
         if (error.message === "invalid otp" || error.message === "expired otp") return res.status(400).json({
             success : false,
             message : "bad request",
             error : "invalid or expired otp"
         })
+        logger.error({err : error}, error.message)
         return res.status(500).json({
             success : false,
             message : "internal server error",
@@ -226,6 +251,7 @@ export const passwordResetController = async (req :Request, res :Response) => {
     const { id, token, password } = req.body
     try{
         await passwordResetService(id, token, password)
+        logger.warn({userId : id}, "password reset successfully")
         return res.status(200).json({
             success : true,
             message : "password reset successfully",
@@ -233,12 +259,14 @@ export const passwordResetController = async (req :Request, res :Response) => {
         })
     }catch(error :any){
         if(error.message === "invalid token" || error.message === "expired token"){
+            logger.warn({err : error}, `password reset aborted: ${error.message}`)
             return res.status(400).json({
                 success : false,
                 message : "bad request",
                 error : "invalid or expired token"
             })
         }else{
+            logger.error({err : error}, error.message)
             return res.status(500).json({
                 success : false,
                 message : "internal server error",
@@ -253,26 +281,35 @@ export const changePasswordController = async (req :Request, res :Response) => {
     const { userId } = (req as any).user
     const user = await retrieveUserService(userId)
 
-    if(!user) return res.status(401).json({
-        success : false,
-        message : "unauthorized",
-        error : "user is unauthorized to perform this action"
-    })
+    if(!user){
+        logger.warn({userId : userId}, "password changing aborted : unauthorized user")
+        return res.status(401).json({
+            success : false,
+            message : "unauthorized",
+            error : "user is unauthorized to perform this action"
+        })
+    }
+        
 
-    if(!(await verifyPassword(password, user.password))) return res.status(400).json({
-        success : false,
-        message : "invalid credentials",
-        error : "password is incorrect"
-    })
+    if(!(await verifyPassword(password, user.password))){
+        logger.warn({userId : userId}, "password is incorrect")
+        return res.status(400).json({
+            success : false,
+            message : "invalid credentials",
+            error : "password is incorrect"
+        })
+    } 
 
     try{
         await changePasswordservice(userId, newPassword)
+        logger.warn({userId : userId}, "password chnaged successfully")
         return res.status(200).json({
             success : true,
             message : "password changed successfully",
             data : {}
         })
-    }catch(error){
+    }catch(error :any){
+        logger.warn({err : error}, error.message)
         if (error) return res.status(500).json({
             success : false,
             message : "internal server error",
