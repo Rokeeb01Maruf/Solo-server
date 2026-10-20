@@ -5,7 +5,6 @@ export const signupSchema = z.object({
     password: z.string().min(8),
     location: z.string().nonempty(),
     email: z.email(),
-    profileUrl: z.string().nonempty(),
     lastDevice: z.string().nonempty()
 })
 

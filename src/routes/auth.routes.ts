@@ -15,9 +15,11 @@ import { signupController,
     passwordResetController,
     changePasswordController,
  } from "../controllers/auth.controller"
+import parser from "../middlewares/upload.middleware"
+
 const router = Router()
 
-router.post("/signup", ValidateSignup, signupController)
+router.post("/signup", parser.single("avatar"),ValidateSignup, signupController)
 router.post("/signin", ValidateSignin, signinController)
 router.post("/refresh", validateRefreshToken, refreshTokenController)
 router.patch("/email", verifyEmail)

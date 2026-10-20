@@ -27,15 +27,8 @@ export const createUserService = async (data: signup) => {
     const user = await recordUser(data, hashedOtp)
     if (user.error) {
         throw new Error(user.error)
-    } else if (user.userId) {
-        const { tokens } = generateToken(user.userId)
-        const refreshToken = await storeRefreshToken(user.userId, tokens.refresh, "")
-        if (tokens) return {
-            id: user.userId,
-            otp: otp,
-            tokens
-        }
     }
+    return { userId : user.userId, otp: otp }
 }
 
 export const getUserService = async (data: signin) => {

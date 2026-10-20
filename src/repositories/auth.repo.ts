@@ -26,7 +26,7 @@ export const recordUser = async (data: signup, code :string) => {
                 profileUrl: data.profileUrl,
                 location: data.location,
                 lastDevice: data.lastDevice,
-                otp : {
+                otps : {
                     create : {
                         code : code,
                         expiresAt : new Date(Date.now() + 5 * 60 * 1000),
@@ -42,7 +42,8 @@ export const recordUser = async (data: signup, code :string) => {
                 return {error : "user already exists"}
             }
         }
-        return {error : "internal server error"}
+        console.log(error)
+        return {error : "internal server error", errors : error}
     }
 }
 

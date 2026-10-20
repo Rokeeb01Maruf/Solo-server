@@ -13,25 +13,38 @@ import { createUserService,
     retrieveUserService,
     changePasswordservice
  } from "../services/auth.service"
+import { uploadProfileService } from "../services/upload.service"
 import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email"
 import { verifyPassword } from "../../utils/argon";
 
 export const signupController = async (req :Request, res :Response) => {
     try{
-        const body = await createUserService(req.body)
+        const image = req.file?.buffer
+        if(!image) throw new Error("image file is required")
+        const upload = await uploadProfileService(image)
+        const data = req.body
+        data.profileUrl = upload.secure_url
+        const body = await createUserService(data)
         if(body) await sendRegistrationEmail(req.body.email, body.otp)
-        logger.info({userId : body?.id}, "account created successfully")
+        logger.info({userId : body?.userId}, "account created successfully")
         return res.status(201).json({
             success : true,
             message : "user account created successfully, check your email for email verification otp",
             data : {
-                id : body?.id,
-                tokens : body?.tokens
+                id : body?.userId,
             }
         })
     }catch(error :any){
+        console.log(error)
         if(error.message == "user already exists"){
             logger.warn("Signup rejected: user already exists")
+            return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : error.message
+            })
+        }else if(error.message === "image file is required"){
+            logger.warn("Signup rejected: no image was uploaded")
             return res.status(400).json({
                 success : false,
                 message : "bad request",
