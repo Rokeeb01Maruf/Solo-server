@@ -4,8 +4,7 @@ export const signupSchema = z.object({
     username: z.string().nonempty(),
     password: z.string().min(8),
     location: z.string().nonempty(),
-    email: z.email(),
-    lastDevice: z.string().nonempty()
+    email: z.email()
 })
 
 export const signinSchema = z.object({

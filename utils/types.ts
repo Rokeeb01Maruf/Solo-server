@@ -3,7 +3,6 @@ export interface signup{
     password: string,
     username: string,
     profileUrl: string,
-    lastDevice: string,
     location: string
 }
 
@@ -20,7 +19,6 @@ export interface UserType{
     profileUrl : string,
     authProvider : string,
     role : string,
-    lastDevice : string,
     location : string,
     createdAt : string,
     updatedAt : string

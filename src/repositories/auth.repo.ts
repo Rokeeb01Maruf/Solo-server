@@ -25,7 +25,6 @@ export const recordUser = async (data: signup, code :string) => {
                 username: data.username,
                 profileUrl: data.profileUrl,
                 location: data.location,
-                lastDevice: data.lastDevice,
                 otps : {
                     create : {
                         code : code,
