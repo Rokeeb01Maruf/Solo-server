@@ -9,8 +9,7 @@ CREATE TABLE "User" (
     "role" TEXT NOT NULL,
     "createdAt" TEXT NOT NULL,
     "updatedAt" TEXT NOT NULL,
-    "lastDevice" TEXT NOT NULL,
-    "location" TEXT NOT NULL,
+
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );

@@ -3,9 +3,12 @@ import type { Request, Response, NextFunction } from "express"
 import auth from "./routes/auth.routes"
 import users from "./routes/users.routes"
 import pinoHttp from "pino-http"
+import { generalRateLimiter } from "./middlewares/rateLimit.middleware"
 import logger from "../utils/logger"
 
 const app = express()
+
+app.use(generalRateLimiter)
 
 app.use(
     pinoHttp({

@@ -1,11 +1,14 @@
 import Router from "express"
-import { ValidateSignup, 
+import { 
+    ValidateSignup, 
     ValidateSignin, 
     validateRefreshToken,
     validateUser,
     validateChangePassword
- } from "../middlewares/auth.middleware"
-import { signupController, 
+ } 
+from "../middlewares/auth.middleware"
+import { 
+    signupController, 
     signinController, 
     refreshTokenController,
     verifyEmail,
@@ -14,18 +17,28 @@ import { signupController,
     validatePasswordOtp,
     passwordResetController,
     changePasswordController,
- } from "../controllers/auth.controller"
+ } 
+from "../controllers/auth.controller"
+import { 
+    resendOtpRateLimiter,
+    changePasswordRateLimiter,
+    resetPasswordRateLimiter,
+    signinRateLimiter,
+    signupRateLimiter,
+    refreshTokenRateLimiter
+} 
+ from "../middlewares/rateLimit.middleware"
 import parser from "../middlewares/upload.middleware"
 
 const router = Router()
 
-router.post("/signup", parser.single("avatar"),ValidateSignup, signupController)
-router.post("/signin", ValidateSignin, signinController)
-router.post("/refresh", validateRefreshToken, refreshTokenController)
-router.patch("/email", verifyEmail)
-router.patch("/otp", resendOtpController)
-router.post("/password/request", passwordResetOtp)
-router.post("/password/reset", passwordResetController)
-router.post("/password/change", validateUser, validateChangePassword, changePasswordController)
-router.post("/otp", validatePasswordOtp)
+router.post("/signup", signupRateLimiter, parser.single("avatar"),ValidateSignup, signupController)
+router.post("/signin", signinRateLimiter,ValidateSignin, signinController)
+router.post("/refresh", refreshTokenRateLimiter,validateRefreshToken, refreshTokenController)
+router.patch("/email", resetPasswordRateLimiter, verifyEmail)
+router.patch("/otp", resendOtpRateLimiter, resendOtpController)
+router.post("/password/request", resetPasswordRateLimiter, passwordResetOtp)
+router.post("/password/reset", resetPasswordRateLimiter, passwordResetController)
+router.post("/password/change", changePasswordRateLimiter,validateUser, validateChangePassword, changePasswordController)
+router.post("/otp", resetPasswordRateLimiter, validatePasswordOtp)
 export default router

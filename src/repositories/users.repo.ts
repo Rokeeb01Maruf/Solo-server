@@ -5,8 +5,7 @@ export const getUserRepo = async(id :string) => {
             id : id
         },
         omit : {
-            password : true,
-            location : true,
+            password : true
         }
     })
 

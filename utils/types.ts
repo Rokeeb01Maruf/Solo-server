@@ -2,8 +2,7 @@ export interface signup{
     email: string,
     password: string,
     username: string,
-    profileUrl: string,
-    location: string
+    profileUrl: string
 }
 
 export interface signin{
@@ -19,7 +18,6 @@ export interface UserType{
     profileUrl : string,
     authProvider : string,
     role : string,
-    location : string,
     createdAt : string,
     updatedAt : string
 }
