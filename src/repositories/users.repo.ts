@@ -28,3 +28,18 @@ export const blogPostRepo = async (userId :string, data :blogPostType)=>{
         }
     })
 }
+
+export const getblogsByIdRepo = async( offset :number, limit :number, userId :string) => {
+    const blogs = await prisma.blogs.findMany({
+        where : {
+            userId : userId
+        },
+        skip : offset,
+        take : limit,
+        orderBy : {
+            updatedAt : "desc",
+        }
+    })
+
+    return blogs
+}

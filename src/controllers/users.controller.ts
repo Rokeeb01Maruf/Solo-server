@@ -3,6 +3,7 @@ import logger from '../../utils/logger'
 import { 
     getUserService,
     createBlogService,
+    getBlogsByIdService
 } from "../services/users.service"
 import { uploadImageService } from "../services/upload.service"
 
@@ -92,6 +93,30 @@ export const createBlogController = async (req :Request, res :Response) => {
         })
     }catch(error :any){
         logger.error({err : error}, "failed to post the blog")
+        return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : error
+        })
+    }
+}
+
+export const getBlogsbyIdController = async (req :Request, res :Response) => {
+    try{
+        const user = (req as any).user.userId
+        const blogs = await getBlogsByIdService(res.locals.pagination, user)
+        res.locals.pagination.fetched = blogs.length
+        logger.info({userId : user}, "blogs fetched successfully")
+        return res.status(200).json({
+            success : true,
+            message : "users blog fetched successfully",
+            data : {
+                blogs : blogs,
+                pagination : res.locals.pagination
+            }
+        })
+    }catch(error){
+        logger.error({err : error}, "fetch aborted: internal server error")
         return res.status(500).json({
             success : false,
             message : "internal server error",

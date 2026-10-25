@@ -1,4 +1,4 @@
-import { getUserRepo, blogPostRepo } from "../repositories/users.repo"
+import { getUserRepo, blogPostRepo, getblogsByIdRepo } from "../repositories/users.repo"
 import { blogPostType } from "../../utils/types"
 import crypto from "crypto"
 
@@ -11,4 +11,10 @@ const slug = `${data.title.split(" ").join("-")}-${crypto.randomUUID().substring
     data.slug = slug
     const blog = await blogPostRepo(userId, data)
     return blog
+}
+
+export const getBlogsByIdService = async(pagination :{page : number, limit : number}, userId :string) => {
+    const offset = (pagination.page - 1) * pagination.limit
+    const blogs = await getblogsByIdRepo(offset, pagination.limit, userId)
+    return blogs
 }
