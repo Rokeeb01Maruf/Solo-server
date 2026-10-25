@@ -28,11 +28,11 @@ import {
     refreshTokenRateLimiter
 } 
  from "../middlewares/rateLimit.middleware"
-import parser from "../middlewares/upload.middleware"
+import { profileParser } from "../middlewares/upload.middleware"
 
 const router = Router()
 
-router.post("/signup", signupRateLimiter, parser.single("avatar"),ValidateSignup, signupController)
+router.post("/signup", signupRateLimiter, profileParser.single("avatar"),ValidateSignup, signupController)
 router.post("/signin", signinRateLimiter,ValidateSignin, signinController)
 router.post("/refresh", refreshTokenRateLimiter,validateRefreshToken, refreshTokenController)
 router.patch("/email", resetPasswordRateLimiter, verifyEmail)

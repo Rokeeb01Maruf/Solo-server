@@ -27,3 +27,7 @@ Thumbs.db
 
 # Prisma generated folder
 /generated/prisma
+
+
+# testing module
+test.js

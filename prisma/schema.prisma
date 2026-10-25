@@ -26,6 +26,7 @@ model users {
 
   refreshToken refresh_token?
   otps          otp[]
+  blogs blogs[]
   token token?
 }
 
@@ -74,4 +75,25 @@ model token {
   updatedAt DateTime @updatedAt
 
   user users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model blogs{
+  id String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  title String
+  content String
+  slug String @unique
+  coverImageUrl String?
+  likes Int @default(0)
+  status blogStatus @default(published)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blogger users @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum blogStatus{
+  published
+  unpublished
+  deleted
 }

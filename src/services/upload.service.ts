@@ -1,10 +1,10 @@
 import { UploadApiResponse } from "cloudinary"
 import cloudinary from "../../utils/cloudinary"
 
-export const uploadProfileService = (buffer :Buffer): Promise<UploadApiResponse> => {
+export const uploadImageService = (folder :string, buffer :Buffer): Promise<UploadApiResponse> => {
     return new Promise((resolve, reject)=>{
         cloudinary.uploader.upload_stream({
-            folder : "solo/avatar",
+            folder : folder,
             resource_type : "image"
         },
         (error, result) => {

@@ -43,6 +43,7 @@ export const getUserService = async (data: signin) => {
             if (refreshToken) {
                 return {
                     id: user.user.id,
+                    email: user.user.emailVerified,
                     tokens
                 }
             } else {

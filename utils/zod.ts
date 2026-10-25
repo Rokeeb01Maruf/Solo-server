@@ -20,3 +20,8 @@ export const changePasswordSchema = z.object({
     password : z.string().min(8),
     newPassword : z.string().min(8)
 })
+
+export const blogPostSchema = z.object({
+    title : z.string().min(1).max(50),
+    content : z.string().min(1).max(266)
+})

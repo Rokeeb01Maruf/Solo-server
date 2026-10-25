@@ -1,7 +1,8 @@
 import { Request, Response } from "express"
 import crypto from "crypto"
 import logger from "../../utils/logger"
-import { createUserService, 
+import { 
+    createUserService, 
     getUserService, 
     refreshTokenService, 
     validateOtp,
@@ -13,7 +14,7 @@ import { createUserService,
     retrieveUserService,
     changePasswordservice
  } from "../services/auth.service"
-import { uploadProfileService } from "../services/upload.service"
+import { uploadImageService } from "../services/upload.service"
 import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email"
 import { verifyPassword } from "../../utils/argon";
 
@@ -21,7 +22,7 @@ export const signupController = async (req :Request, res :Response) => {
     try{
         const image = req.file?.buffer
         if(!image) throw new Error("image file is required")
-        const upload = await uploadProfileService(image)
+        const upload = await uploadImageService("solo/avatar",image)
         const data = req.body
         data.profileUrl = upload.secure_url
         const body = await createUserService(data)
@@ -68,6 +69,14 @@ export const signinController = async (req :Request, res: Response) => {
             {userId : body?.id},
             "user sgnin successfully"
         )
+        if (!body?.email){
+            logger.warn({userId : body?.id}, "Signup aborted: user is unverified")
+            return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : "user is unverified"
+            })
+        }
         return res.status(200).json({
             success: true,
             message: "user signin successfully",
@@ -80,7 +89,7 @@ export const signinController = async (req :Request, res: Response) => {
                 success : false,
                 message : "bad request",
                 error : "invalid email or password"
-            })
+            })        
         }else{
             logger.error({err : error}, "Signin failed")
             return res.status(500).json({

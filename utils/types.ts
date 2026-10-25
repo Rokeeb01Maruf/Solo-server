@@ -21,3 +21,10 @@ export interface UserType{
     createdAt : string,
     updatedAt : string
 }
+
+export interface blogPostType{
+    title : string,
+    content : string,
+    coverImageUrl : string,
+    slug : string    
+}

@@ -18,7 +18,7 @@ app.use(
 
 app.use(express.json())
 
-app.get("/", (req :Request, res :Response, next:NextFunction)=>{
+app.get("/", (req :Request, res :Response)=>{
     res.send("server is working")
 })
 
