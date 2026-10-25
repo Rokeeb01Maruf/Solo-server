@@ -56,7 +56,7 @@ export const signupController = async (req :Request, res :Response) => {
             return res.status(500).json({
                 success : false,
                 message : "server failed to register user",
-                error : error
+                error : error.message
             })
         }
     }

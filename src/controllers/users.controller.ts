@@ -96,7 +96,7 @@ export const createBlogController = async (req :Request, res :Response) => {
         return res.status(500).json({
             success : false,
             message : "internal server error",
-            error : error
+            error : error.message
         })
     }
 }
@@ -115,12 +115,12 @@ export const getBlogsbyIdController = async (req :Request, res :Response) => {
                 pagination : res.locals.pagination
             }
         })
-    }catch(error){
+    }catch(error :any){
         logger.error({err : error}, "fetch aborted: internal server error")
         return res.status(500).json({
             success : false,
             message : "internal server error",
-            error : error
+            error : error.message
         })
     }
 }

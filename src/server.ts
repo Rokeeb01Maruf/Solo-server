@@ -5,6 +5,7 @@ import users from "./routes/users.routes"
 import pinoHttp from "pino-http"
 import { generalRateLimiter } from "./middlewares/rateLimit.middleware"
 import logger from "../utils/logger"
+import blog from "./routes/blogs.routes"
 
 const app = express()
 
@@ -24,6 +25,7 @@ app.get("/", (req :Request, res :Response)=>{
 
 app.use("/api/v1/auth", auth)
 app.use("/api/v1/users", users)
+app.use("/api/v1/blogs", blog)
 app.get("/test", (req :Request, res :Response)=>{
     res.status(200).json({
         user_agent : req.headers["user-agent"],

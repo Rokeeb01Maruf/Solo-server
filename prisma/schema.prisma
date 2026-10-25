@@ -84,16 +84,24 @@ model blogs{
   content String
   slug String @unique
   coverImageUrl String?
-  likes Int @default(0)
   status blogStatus @default(published)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   blogger users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes likes[]
 }
 
 enum blogStatus{
   published
   unpublished
   deleted
+}
+
+model likes{
+  id String @id @default(uuid()) @db.Uuid
+  blogId String @db.Uuid
+  createdAt DateTime @default(now())
+
+  blog blogs @relation(fields: [blogId], references: [id], onDelete: Cascade)
 }
