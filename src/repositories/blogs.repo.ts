@@ -44,7 +44,8 @@ export const likeBlogRepo = async(blogId :string, anonId :string) => {
         include : {
             _count : {
                 select : {
-                    likes : true
+                    likes : true,
+                    comments : true
                 }
             }
         }
@@ -71,7 +72,8 @@ export const unLikeBlogRepo = async(id :string, anonId :string) => {
         include : {
             _count : {
                 select : {
-                    likes : true
+                    likes : true,
+                    comments : true
                 }
             }
         }

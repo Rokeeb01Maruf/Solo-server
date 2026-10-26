@@ -90,6 +90,7 @@ model blogs{
 
   blogger users @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes likes[]
+  comments comments[]
 }
 
 enum blogStatus{
@@ -106,4 +107,25 @@ model likes{
 
   blog blogs @relation(fields: [blogId], references: [id], onDelete: Cascade)
   @@unique([blogId, likerId])
+}
+
+model comments{
+  id String @id @default(uuid()) @db.Uuid
+  blogId String @db.Uuid
+  anonId String @db.Uuid
+  content String
+  createdAt DateTime @default(now())
+  replies replies[]
+
+  blog blogs @relation(fields: [blogId], references: [id], onDelete: Cascade)
+}
+
+model replies{
+  id String @id @default(uuid()) @db.Uuid
+  commentId String @db.Uuid
+  anonId String @db.Uuid
+  content String
+  createdAt DateTime @default(now())
+
+  comment comments @relation(fields: [commentId], references: [id], onDelete: Cascade)
 }
