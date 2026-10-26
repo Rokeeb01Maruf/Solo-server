@@ -11,6 +11,42 @@ export const getBlogsRepo = async(offset :number, limit :number) => {
         },
         skip : offset,
 
-        take : limit
+        take : limit,
+
+        include : {
+            likes : true,
+            _count : {
+                select : {
+                    likes : true
+                }
+            }
+        },
+
+        
+        
+    })
+}
+
+export const likeBlogRepo = async(blogId :string, likerId :string) => {
+    return await prisma.likes.create({
+        data : {
+            blogId : blogId,
+            likerId : likerId
+        },
+        select : {
+            blog : true
+        }
+    })
+}
+
+export const unlikeBlogRepo = async(id :string, likerId :string) => {
+    return await prisma.likes.delete({
+        where : {
+            id : id,
+            likerId : likerId
+        },
+        select : {
+            blog : true
+        }
     })
 }

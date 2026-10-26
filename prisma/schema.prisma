@@ -101,6 +101,7 @@ enum blogStatus{
 model likes{
   id String @id @default(uuid()) @db.Uuid
   blogId String @db.Uuid
+  likerId String @db.Uuid
   createdAt DateTime @default(now())
 
   blog blogs @relation(fields: [blogId], references: [id], onDelete: Cascade)
