@@ -105,4 +105,5 @@ model likes{
   createdAt DateTime @default(now())
 
   blog blogs @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  @@unique([blogId, likerId])
 }

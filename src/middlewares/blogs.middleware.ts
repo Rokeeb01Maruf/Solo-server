@@ -29,3 +29,24 @@ export const validateUserId = (req :Request, res :Response, next :NextFunction) 
     
     next()
 }
+
+export const validateAnon = (req :Request, res :Response, next :NextFunction) => {
+    try{
+        const anonId = req.get("authorization")?.split(" ")[1]
+        const { blogId } = req.body
+        const verifyAnon = getBlogSchema.safeParse({id : anonId}) 
+        const verifyBlog = getBlogSchema.safeParse({id : blogId})
+        if(!verifyAnon.success || !verifyBlog.success){
+            throw new Error("invalid blogId or unauthorized")
+        }
+        req.body.anonId = anonId
+    }catch(error){
+        return res.status(400).json({
+            success : false,
+            message : "bad request",
+            error : "invalid blogId or unauthorized"
+        })
+    }
+    
+    next()
+}
