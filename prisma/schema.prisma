@@ -113,6 +113,7 @@ model comments{
   id String @id @default(uuid()) @db.Uuid
   blogId String @db.Uuid
   anonId String @db.Uuid
+  username String @default("anonymous")
   content String
   createdAt DateTime @default(now())
   replies replies[]
@@ -124,6 +125,7 @@ model replies{
   id String @id @default(uuid()) @db.Uuid
   commentId String @db.Uuid
   anonId String @db.Uuid
+  username String @default("anonymous")
   content String
   createdAt DateTime @default(now())
 

@@ -79,3 +79,71 @@ export const unLikeBlogRepo = async(id :string, anonId :string) => {
         }
     })
 }
+
+export const getBlogDetailsRepo = async(blogId :string) => {
+    return await prisma.blogs.findFirst({
+        where : {
+            id : blogId
+        },
+        include : {
+            _count : {
+                select : {
+                    likes : true,
+                    comments : true,
+                }
+            },
+            comments : {
+                include : {
+                    _count : {
+                        select : {
+                            replies : true
+                        }
+                    }
+                },
+                orderBy : {
+                    createdAt : "desc"
+                }
+            }
+        }
+    })
+}
+
+export const createCommentRepo = async(data :{anonId :string, blogId :string, content :string, username :string | undefined}) => {
+    const comment =  await prisma.comments.create({
+        data : data,
+        select : {
+            blogId : true
+        }
+    })
+
+    return await getBlogDetailsRepo(comment.blogId)
+}
+
+export const getBlogCommentsRepo = async(blogId :string) => {
+    return await prisma.comments.findMany({
+        where : {
+            blogId : blogId
+        },
+        include : {
+            _count : {
+                select : {
+                    replies : true
+                }
+            }
+        }
+    })
+}
+
+export const getRepliesRepo = async(data :{anonId :string, commentId :string}) => {
+    return await prisma.comments.findMany({
+        where : data,
+        include : {
+            _count : {
+                select : {
+                    replies : true
+                }
+            },
+            replies : true
+        }
+    })
+}

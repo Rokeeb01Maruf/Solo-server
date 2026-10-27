@@ -50,3 +50,45 @@ export const validateAnon = (req :Request, res :Response, next :NextFunction) =>
     
     next()
 }
+
+export const validateContent = (req :Request, res :Response, next :NextFunction) => {
+    const body = req.body
+    if(!String(body.content) || body.content.length < 1) return res.status(400).json({
+        success : false,
+        message : "bad request",
+        error : "you cannot post an empty content"
+    })
+
+    next()
+}
+
+export const validateGetComments = (req :Request, res :Response, next :NextFunction) => {
+    try{
+        const blogId = req.params.id
+        const anonId = req.get("authorization")?.split(" ")[1]
+        const verifyAnon = getBlogSchema.safeParse({id : anonId})
+        const verifyBlogId = getBlogSchema.safeParse({id : blogId})
+
+        if(!verifyAnon.success) throw new Error("unauthorized")
+        if(!verifyBlogId.success) throw new Error("invalid blog selected")
+        
+        res.locals.blogId = blogId
+        res.locals.anonId = anonId
+
+        next()
+    }catch(error :any){
+        if(error.message === "unauthorized"){ 
+            return res.status(401).json({
+                success : false,
+                message : error.message,
+                error : "you are permited to perform this operation"
+            })
+        }else{
+           return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : error.message
+            }) 
+        }
+    }
+}
