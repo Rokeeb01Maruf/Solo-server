@@ -3,7 +3,9 @@ import {
     likeBlogService,
     unLikeBlogService,
     getBlogCommentsService,
-    createCommentService
+    createCommentService,
+    createReplyService,
+    getRepliesService
 } from "../services/blogs.service"
 import { Request, Response } from "express"
 import logger from "../../utils/logger"
@@ -150,6 +152,53 @@ export const getBlogCommentsController = async (req: Request, res: Response) => 
             success: false,
             message: "internal server error",
             error: error.message
+        })
+    }
+}
+
+export const createReplyController = async(req :Request, res :Response) => {
+    const { anonId, content, commentId, username }  = res.locals
+    const data = { anonId : anonId, content : content, commentId : commentId, username : username }
+    try{
+        const replies = await createReplyService(data)
+        logger.info("user left a comment successfully")
+        return res.status(201).json({
+            success : true,
+            message : "you successfully left a reply",
+            data : {
+                replies : replies,
+                anonId : anonId
+            }
+        })
+    }catch(error :any){
+        logger.error({error : error}, error.message)
+        return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : error.message
+        })
+    }
+}
+
+export const getRepliesController = async(req :Request, res :Response) => {
+    const { anonId, commentId } = res.locals
+    try{
+        const replies = await getRepliesService(commentId)
+        logger.info("replies retrieved successfully")
+        return res.status(200).json({
+            success : false,
+            message : "replies retrieved successfully",
+            data : {
+                replies : replies,
+                anonId : anonId
+            }
+        })
+    }catch(error :any){
+        logger.error({error : error}, error.message)
+        return res.status(500).json({
+            success : false,
+            message : "internal server error",
+            error : error.message
         })
     }
 }

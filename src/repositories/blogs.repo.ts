@@ -17,7 +17,8 @@ export const getBlogsRepo = async(offset :number, limit :number) => {
             likes : true,
             _count : {
                 select : {
-                    likes : true
+                    likes : true,
+                    comments : true
                 }
             }
         },
@@ -119,12 +120,13 @@ export const createCommentRepo = async(data :{anonId :string, blogId :string, co
     return await getBlogDetailsRepo(comment.blogId)
 }
 
-export const getBlogCommentsRepo = async(blogId :string) => {
+export const getRepliesRepo = async(commentId :string) => {
     return await prisma.comments.findMany({
         where : {
-            blogId : blogId
+            id :commentId
         },
         include : {
+            replies : true,
             _count : {
                 select : {
                     replies : true
@@ -134,16 +136,36 @@ export const getBlogCommentsRepo = async(blogId :string) => {
     })
 }
 
-export const getRepliesRepo = async(data :{anonId :string, commentId :string}) => {
-    return await prisma.comments.findMany({
-        where : data,
-        include : {
-            _count : {
+// export const getRepliesRepo = async(data :{anonId :string, commentId :string}) => {
+//     return await prisma.comments.findMany({
+//         where : data,
+//         include : {
+//             _count : {
+//                 select : {
+//                     replies : true
+//                 }
+//             },
+//             replies : {
+//                 orderBy : {
+//                     createdAt : "desc"
+//                 }
+//             }
+            
+//         }
+//     })
+// }
+
+
+export const createReplyRepo = async(data : {commentId : string, anonId :string, content :string, username : string | undefined}) => {
+    const reply = await prisma.replies.create({
+        data : data,
+        select : {
+            comment : {
                 select : {
-                    replies : true
+                    id : true
                 }
-            },
-            replies : true
+            }
         }
     })
+    return await getRepliesRepo(reply.comment.id)
 }

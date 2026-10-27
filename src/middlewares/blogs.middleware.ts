@@ -92,3 +92,72 @@ export const validateGetComments = (req :Request, res :Response, next :NextFunct
         }
     }
 }
+
+export const validateCreateReplies = (req :Request, res :Response, next :NextFunction) => {
+    
+    try{
+        const anonId = req.get("authorization")?.split(" ")[1]
+        const { commentId, content, username } = req.body
+        const verifyAnon = getBlogSchema.safeParse({id : anonId})
+        const verifyBlogId = getBlogSchema.safeParse({id : commentId})
+
+        if(!verifyAnon.success) throw new Error("unauthorized")
+        if(!verifyBlogId.success) throw new Error("invalid comment selected")
+
+        if(!String(content)) throw new Error("invalid comment selected")
+        res.locals.commentId = commentId
+        res.locals.anonId = anonId
+        res.locals.content = content
+        if(req.body.username){
+            res.locals.username = username
+        }else{
+            res.locals.username = undefined
+        }
+        next()
+    }catch(error :any){
+        if(error.message === "unauthorized"){
+            return res.status(401).json({
+                success : false,
+                message : error.message,
+                error : "you are not permitted to perform this action"
+            })
+        }else{
+            return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : error.message
+            })
+        }
+    }
+}
+
+export const validateGetReplies = (req :Request, res :Response, next :NextFunction) => {
+    try{
+        const anonId = req.get("authorization")?.split(" ")[1]
+        const commentId = req.params.id
+        const verifyAnon = getBlogSchema.safeParse({id : anonId})
+        const verifyCommentId = getBlogSchema.safeParse({id : commentId})
+
+        if(!verifyAnon.success) throw new Error("unauthorized")
+        if(!verifyCommentId.success) throw new Error("invalid comment selected")
+        
+        res.locals.anonId = anonId
+        res.locals.commentId = commentId
+
+        next()
+    }catch(error :any){
+        if(error.message === "unauthorized"){
+            return res.status(401).json({
+                success : false,
+                message : error.message,
+                error : "you are not permitted to perform this action"
+            })
+        }else{
+            return res.status(400).json({
+                success : false,
+                message : "bad request",
+                error : error.message
+            })
+        }
+    }
+}
