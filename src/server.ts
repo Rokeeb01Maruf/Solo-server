@@ -37,6 +37,10 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 app.use("/api/v1/auth", auth)
 app.use("/api/v1/users", users)
 app.use("/api/v1/blogs", blog)
+
+app.get("/", (req :Request, res :Response)=>{
+    res.status(200).send("solo server is working")
+})
 app.get("/test", (req :Request, res :Response)=>{
     res.status(200).json({
         user_agent : req.headers["user-agent"],
