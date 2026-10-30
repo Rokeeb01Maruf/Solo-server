@@ -32,7 +32,7 @@ const openApiDocument = parse(
   )
 );
 
-app.use("/", swaggerUi.serve, swaggerUi.setup(openApiDocument));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api/v1/auth", auth)
 app.use("/api/v1/users", users)
