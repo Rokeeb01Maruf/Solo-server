@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from "express"
-import { getBlogSchema } from "../../utils/zod"
+import { getBlogSchema } from "../../utils/zod.js"
 
 export const validateUserId = (req :Request, res :Response, next :NextFunction) => {
         const authHeader = req.get("authorization")

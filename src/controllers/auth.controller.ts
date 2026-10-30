@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import crypto from "crypto"
-import logger from "../../utils/logger"
+import logger from "../../utils/logger.js"
 import { 
     createUserService, 
     getUserService, 
@@ -13,10 +13,10 @@ import {
     passwordResetService,
     retrieveUserService,
     changePasswordservice
- } from "../services/auth.service"
-import { uploadImageService } from "../services/upload.service"
-import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email"
-import { verifyPassword } from "../../utils/argon";
+ } from "../services/auth.service.js"
+import { uploadImageService } from "../services/upload.service.js"
+import { sendPasswordResetEmail, sendRegistrationEmail } from "../../utils/email.js"
+import { verifyPassword } from "../../utils/argon.js";
 
 export const signupController = async (req :Request, res :Response) => {
     try{

@@ -1,5 +1,5 @@
 import { UploadApiResponse } from "cloudinary"
-import cloudinary from "../../utils/cloudinary"
+import cloudinary from "../../utils/cloudinary.js"
 
 export const uploadImageService = (folder :string, buffer :Buffer): Promise<UploadApiResponse> => {
     return new Promise((resolve, reject)=>{

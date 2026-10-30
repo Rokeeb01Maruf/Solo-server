@@ -1,5 +1,5 @@
-import { prisma } from "../../lib/prisma"
-import { blogPostType } from "../../utils/types";
+import { prisma } from "../../lib/prisma.js"
+import { blogPostType } from "../../utils/types.js";
 export const getUserRepo = async(id :string) => {
     const user = await prisma.users.findUnique({
         where : {

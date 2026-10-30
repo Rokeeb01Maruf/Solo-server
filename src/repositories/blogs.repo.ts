@@ -1,4 +1,4 @@
-import { prisma } from "../../lib/prisma"
+import { prisma } from "../../lib/prisma.js"
 
 export const getBlogsRepo = async(offset :number, limit :number) => {
     return await prisma.blogs.findMany({

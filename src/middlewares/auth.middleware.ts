@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express"
-import { signupSchema, signinSchema, passwordResetSchema, changePasswordSchema } from "../../utils/zod"
-import { verifyAccessToken, verifyRefreshToken } from "../../lib/jwt"
+import { signupSchema, signinSchema, passwordResetSchema, changePasswordSchema } from "../../utils/zod.js"
+import { verifyAccessToken, verifyRefreshToken } from "../../lib/jwt.js"
 
 
 export const ValidateSignup = (

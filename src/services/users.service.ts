@@ -2,8 +2,8 @@ import {
     getUserRepo, 
     blogPostRepo,
     getblogsByIdRepo,
- } from "../repositories/users.repo"
-import { blogPostType } from "../../utils/types"
+ } from "../repositories/users.repo.js"
+import { blogPostType } from "../../utils/types.js"
 import crypto from "crypto"
 
 export const getUserService = async (id :string) => {

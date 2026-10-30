@@ -1,11 +1,11 @@
 import express from "express"
-import type { Request, Response, NextFunction } from "express"
-import auth from "./routes/auth.routes"
-import users from "./routes/users.routes"
-import pinoHttp from "pino-http"
-import { generalRateLimiter } from "./middlewares/rateLimit.middleware"
-import logger from "../utils/logger"
-import blog from "./routes/blogs.routes"
+import type { Request, Response } from "express"
+import auth from "./routes/auth.routes.js"
+import users from "./routes/users.routes.js"
+import { pinoHttp } from "pino-http"
+import { generalRateLimiter } from "./middlewares/rateLimit.middleware.js"
+import logger from "../utils/logger.js"
+import blog from "./routes/blogs.routes.js"
 import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "node:fs";
 import path from "node:path";

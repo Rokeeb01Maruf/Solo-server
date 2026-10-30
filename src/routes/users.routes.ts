@@ -1,8 +1,8 @@
 import Router from "express"
-import { validateUser } from "../middlewares/auth.middleware"
-import { validatePagination } from "../middlewares/pagination.middleware"
-import { blogParser } from "../middlewares/upload.middleware"
-import { getMeController, createBlogController, getBlogsbyIdController } from "../controllers/users.controller"
+import { validateUser } from "../middlewares/auth.middleware.js"
+import { validatePagination } from "../middlewares/pagination.middleware.js"
+import { blogParser } from "../middlewares/upload.middleware.js"
+import { getMeController, createBlogController, getBlogsbyIdController } from "../controllers/users.controller.js"
 
 const router = Router()
 const images = [{name : "inline", maxCount : 1}, {name : "cover", maxCount : 1}]

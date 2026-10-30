@@ -1,6 +1,6 @@
-import { prisma } from "../../lib/prisma"
-import { signup } from "../../utils/types"
-import { Prisma } from "../../generated/prisma/client"
+import { prisma } from "../../lib/prisma.js"
+import { signup } from "../../utils/types.js"
+import { Prisma } from "../../generated/prisma/client.js"
 
 export const retrieveUser = async (email: string) => {
     const user = await prisma.users.findUnique({

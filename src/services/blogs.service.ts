@@ -6,7 +6,7 @@ import {
     getBlogDetailsRepo,
     createReplyRepo, 
     getRepliesRepo
- } from "../repositories/blogs.repo"
+ } from "../repositories/blogs.repo.js"
 
 export const getBlogsService = async({ page, limit }:{page : number, limit : number}) => {
     const offset = (page - 1) * limit

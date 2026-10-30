@@ -6,9 +6,9 @@ import {
     createCommentService,
     createReplyService,
     getRepliesService
-} from "../services/blogs.service"
+} from "../services/blogs.service.js"
 import { Request, Response } from "express"
-import logger from "../../utils/logger"
+import logger from "../../utils/logger.js"
 
 export const getBlogsController = async (req: Request, res: Response) => {
     const { id } = res.locals

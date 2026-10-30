@@ -1,11 +1,11 @@
 import { Request, Response} from "express"
-import logger from '../../utils/logger'
+import logger from '../../utils/logger.js'
 import { 
     getUserService,
     createBlogService,
     getBlogsByIdService
-} from "../services/users.service"
-import { uploadImageService } from "../services/upload.service"
+} from "../services/users.service.js"
+import { uploadImageService } from "../services/upload.service.js"
 
 export const getMeController = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId

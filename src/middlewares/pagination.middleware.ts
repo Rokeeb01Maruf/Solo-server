@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express"
-import { paginationSchema } from "../../utils/zod"
-import logger from "../../utils/logger"
+import { paginationSchema } from "../../utils/zod.js"
+import logger from "../../utils/logger.js"
 
 export const validatePagination = (req: Request, res: Response, next: NextFunction) => {
     const result = paginationSchema.safeParse(req.query)

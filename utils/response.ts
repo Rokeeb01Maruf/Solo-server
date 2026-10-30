@@ -1,4 +1,4 @@
-import { UserType } from "./types"
+import { UserType } from "./types.js"
 
 export const User = (data :UserType) => {
     const user = {

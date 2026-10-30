@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from "express";
-import { blogPostSchema } from "../../utils/zod"
+import { blogPostSchema } from "../../utils/zod.js"
 
 export const validateBlogpost = (req :Request, res:Response, next :NextFunction) => {
     const result = blogPostSchema.safeParse(req.body)

@@ -1,6 +1,6 @@
 import Router from "express"
-import { validatePagination } from "../middlewares/pagination.middleware"
-import { validateUserId, validateAnon, validateContent, validateGetComments, validateCreateReplies, validateGetReplies } from "../middlewares/blogs.middleware"
+import { validatePagination } from "../middlewares/pagination.middleware.js"
+import { validateUserId, validateAnon, validateContent, validateGetComments, validateCreateReplies, validateGetReplies } from "../middlewares/blogs.middleware.js"
 import { 
     getBlogsController, 
     likeBlogController, 
@@ -8,7 +8,7 @@ import {
     getBlogCommentsController,
     getRepliesController,
     createReplyController
-} from "../controllers/blogs.controller"
+} from "../controllers/blogs.controller.js"
 
 const router = Router()
 

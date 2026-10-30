@@ -1,4 +1,4 @@
-import type { signup, signin } from "../../utils/types"
+import type { signup, signin } from "../../utils/types.js"
 import crypto from "crypto"
 import {
     recordUser,
@@ -15,9 +15,9 @@ import {
     getPasswordResetToken,
     resetUserPassword,
     retrieveUserbyId
-} from "../repositories/auth.repo"
-import { hashPassword, verifyPassword } from "../../utils/argon"
-import { generateToken } from "../../lib/jwt"
+} from "../repositories/auth.repo.js"
+import { hashPassword, verifyPassword } from "../../utils/argon.js"
+import { generateToken } from "../../lib/jwt.js"
 
 export const createUserService = async (data: signup) => {
     const hash = await hashPassword(data.password)

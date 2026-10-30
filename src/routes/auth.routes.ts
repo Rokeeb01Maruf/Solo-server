@@ -6,7 +6,7 @@ import {
     validateUser,
     validateChangePassword
  } 
-from "../middlewares/auth.middleware"
+from "../middlewares/auth.middleware.js"
 import { 
     signupController, 
     signinController, 
@@ -18,7 +18,7 @@ import {
     passwordResetController,
     changePasswordController,
  } 
-from "../controllers/auth.controller"
+from "../controllers/auth.controller.js"
 import { 
     resendOtpRateLimiter,
     changePasswordRateLimiter,
@@ -27,8 +27,8 @@ import {
     signupRateLimiter,
     refreshTokenRateLimiter
 } 
- from "../middlewares/rateLimit.middleware"
-import { profileParser } from "../middlewares/upload.middleware"
+ from "../middlewares/rateLimit.middleware.js"
+import { profileParser } from "../middlewares/upload.middleware.js"
 
 const router = Router()
 
