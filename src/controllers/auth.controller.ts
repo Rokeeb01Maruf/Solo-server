@@ -67,10 +67,10 @@ export const signinController = async (req :Request, res: Response) => {
         const body = await getUserService(req.body)
         logger.info(
             {userId : body?.id},
-            "user sgnin successfully"
+            "user signin successfully"
         )
         if (!body?.email){
-            logger.warn({userId : body?.id}, "Signup aborted: user is unverified")
+            logger.warn({userId : body?.id}, "Signin aborted: user is unverified")
             return res.status(400).json({
                 success : false,
                 message : "bad request",

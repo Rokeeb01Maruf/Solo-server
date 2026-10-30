@@ -83,10 +83,7 @@ export const createBlogController = async (req :Request, res :Response) => {
         logger.info({userId : user}, "blog posted successfully")
         return res.status(201).json({
             success : true,
-            message : ()=>{
-                if(imageError === "rejected") return "blog posted successfully but encountered problem when uploading the image"
-                return "blog posted successfully"
-            },
+            message : "blog posted successfully",
             data : {
                 id : blog.id
             }

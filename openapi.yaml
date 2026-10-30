@@ -1,0 +1,814 @@
+
+openapi: 3.1.0
+
+info:
+  title: Solo Blog API
+  version: 1.0.0
+  description: |
+    API documentation for Solo, a blog platform.
+    Anonymous visitors can read blogs, like posts, and interact
+    through comments and replies. Authenticated bloggers can
+    manage their accounts and blog posts.
+
+servers:
+  - url: http://localhost:PORT/api/v1
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Account registration, authentication, and password management.
+  - name: Blogs
+    description: Public blog feeds, likes, comments, and replies.
+  - name: Users
+    description: Authenticated user profile and blog management.
+
+paths:
+
+  # AUTH
+
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Create a user account
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [username, email, password, avatar]
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Account created; email verification OTP sent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/signin:
+    post:
+      tags: [Auth]
+      summary: Sign in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Sign-in successful; returns user ID and tokens.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignInResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh access and refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh]
+              properties:
+                refresh:
+                  type: string
+      responses:
+        "200":
+          description: New tokens returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/email:
+    patch:
+      tags: [Auth]
+      summary: Verify email address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerificationRequest"
+      responses:
+        "200":
+          description: Email verified successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyDataResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/otp:
+    post:
+      tags: [Auth]
+      summary: Verify OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OtpVerificationRequest"
+      responses:
+        "200":
+          description: User successfully verified; returns tokens.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtpVerifiedResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    patch:
+      tags: [Auth]
+      summary: Resend OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+      responses:
+        "200":
+          description: OTP resent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/password/request:
+    post:
+      tags: [Auth]
+      summary: Request a password reset OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Password reset email request processed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/password/reset:
+    post:
+      tags: [Auth]
+      summary: Reset password using OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, token, password]
+              properties:
+                id:
+                  type: string
+                token:
+                  type: string
+                  description: OTP used for password reset.
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Password reset successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyDataResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/password/change:
+    post:
+      tags: [Auth]
+      summary: Change authenticated user's password
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [newPassword, oldPassword]
+              properties:
+                newPassword:
+                  type: string
+                oldPassword:
+                  type: string
+      responses:
+        "200":
+          description: Password changed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # BLOGS
+
+  /blogs:
+    get:
+      tags: [Blogs]
+      summary: Get all blogs
+      description: |
+        Public endpoint. If the visitor does not already have an anonId,
+        the API generates one and includes it in the response.
+      responses:
+        "200":
+          description: Blogs fetched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogFeedResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /blogs/like:
+    post:
+      tags: [Blogs]
+      summary: Like a blog
+      security:
+        - AnonymousBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [blogId]
+              properties:
+                blogId:
+                  type: string
+      responses:
+        "200":
+          description: User liked this post successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      tags: [Blogs]
+      summary: Unlike a blog
+      security:
+        - AnonymousBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [blogId]
+              properties:
+                blogId:
+                  type: string
+      responses:
+        "200":
+          description: You successfully unliked the blog.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /blogs/comment:
+    post:
+      tags: [Blogs]
+      summary: Create a comment
+      security:
+        - AnonymousBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [blogId, content]
+              properties:
+                blogId:
+                  type: string
+                content:
+                  type: string
+                username:
+                  type: string
+                  description: Optional display name.
+      responses:
+        "201":
+          description: Comments created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /blogs/comments/{id}:
+    get:
+      tags: [Blogs]
+      summary: Get comments for a blog
+      description: The path parameter id represents the blogId.
+      security:
+        - AnonymousBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Blog ID.
+      responses:
+        "200":
+          description: Comments retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentsResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /blogs/reply:
+    post:
+      tags: [Blogs]
+      summary: Create a reply to a comment
+      security:
+        - AnonymousBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [commentId, content]
+              properties:
+                commentId:
+                  type: string
+                content:
+                  type: string
+                username:
+                  type: string
+                  description: Optional display name.
+      responses:
+        "201":
+          description: Comments created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /blogs/replies/{id}:
+    get:
+      tags: [Blogs]
+      summary: Get replies for a comment
+      description: The path parameter id represents the commentId.
+      security:
+        - AnonymousBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID.
+      responses:
+        "200":
+          description: Replies retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepliesResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  # USERS
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get authenticated user's profile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User data retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfileResponse"
+        "404":
+          description: User not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /users/blog:
+    post:
+      tags: [Users]
+      summary: Create a blog post
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, content]
+              properties:
+                cover:
+                  type: string
+                  format: binary
+                  description: Optional blog cover image.
+                inline:
+                  type: string
+                  format: binary
+                  description: |
+                    Optional inline image upload.
+                    Confirm whether this field accepts multiple files.
+                title:
+                  type: string
+                content:
+                  type: string
+      responses:
+        "201":
+          description: Blog posted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedBlogResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /users/blogs:
+    get:
+      tags: [Users]
+      summary: Get authenticated user's blogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Users blog fetched successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserBlogsResponse"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token for authenticated bloggers.
+
+    AnonymousBearer:
+      type: http
+      scheme: bearer
+      description: Anonymous visitor identifier (anonId). Not a JWT.
+
+  schemas:
+
+    MessageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+    EmptyDataResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          example: {}
+
+    SignupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "user account created successfully, check your email for email verification otp"
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+
+    TokenData:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+
+    SignInResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            email:
+              type: string
+              format: email
+            token:
+              $ref: "#/components/schemas/TokenData"
+
+    RefreshResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            token:
+              $ref: "#/components/schemas/TokenData"
+
+    OtpVerificationRequest:
+      type: object
+      required: [id, otp]
+      properties:
+        id:
+          type: string
+        otp:
+          type: string
+
+    OtpVerifiedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "user successfully verified"
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            token:
+              $ref: "#/components/schemas/TokenData"
+
+    CreatedBlogResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "blog posted successfully"
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+
+    UserProfileResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            username:
+              type: string
+            email:
+              type: string
+              format: email
+            profileUrl:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            role:
+              type: string
+            emailVerified:
+              type: boolean
+
+    BlogFeedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "blogs fetched successfully"
+        data:
+          type: object
+          properties:
+            blogs:
+              type: array
+              items:
+                type: object
+                description: Blog object; exact fields to be confirmed.
+            pagination:
+              type: object
+              description: Pagination metadata; exact fields to be confirmed.
+            anonId:
+              type: string
+
+    CommentsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "comments retrieved successfully"
+        data:
+          type: object
+          description: Exact comments response structure to be confirmed.
+
+    RepliesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "replies retrieved successfully"
+        data:
+          type: object
+          description: Exact replies response structure to be confirmed.
+
+    UserBlogsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "users blog fetched successfully"
+        data:
+          type: object
+          description: Exact blog list and pagination response structure to be confirmed.
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          description: General error category, such as bad request or internal server error.
+        error:
+          type: string
+          description: Specific error message.
+
+  responses:
+
+    BadRequest:
+      description: Bad request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    Unauthorized:
+      description: Unauthorized request.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    InternalError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
