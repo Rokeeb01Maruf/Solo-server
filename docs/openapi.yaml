@@ -11,7 +11,7 @@ info:
     manage their accounts and blog posts.
 
 servers:
-  - url: http://localhost:PORT/api/v1
+  - url: http://localhost:4000/api/v1
     description: Local development server
 
 tags:

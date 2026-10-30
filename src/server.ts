@@ -6,6 +6,10 @@ import pinoHttp from "pino-http"
 import { generalRateLimiter } from "./middlewares/rateLimit.middleware"
 import logger from "../utils/logger"
 import blog from "./routes/blogs.routes"
+import swaggerUi from "swagger-ui-express";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { parse } from "yaml";
 
 const app = express()
 
@@ -19,9 +23,14 @@ app.use(
 
 app.use(express.json())
 
-app.get("/", (req :Request, res :Response)=>{
-    res.send("server is working")
-})
+const openApiDocument = parse(
+  readFileSync(
+    path.join(process.cwd(), "docs", "openapi.yaml"),
+    "utf8"
+  )
+);
+
+app.use("/", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api/v1/auth", auth)
 app.use("/api/v1/users", users)
