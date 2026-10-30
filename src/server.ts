@@ -45,3 +45,5 @@ app.get("/test", (req :Request, res :Response)=>{
 app.listen(4000, ()=>{
     console.log(`server is working on http://127.0.0.1:4000`)
 })
+
+export default app
